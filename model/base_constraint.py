@@ -2,17 +2,16 @@ import logging
 from typing import List
 
 import bpy
-from bpy.props import StringProperty, BoolProperty
-from bpy.types import UILayout, Property, Context
+from bpy.props import BoolProperty, StringProperty
+from bpy.types import Context, Property, UILayout
 
 from ..global_data import WpReq
 from ..utilities import preferences
-from ..declarations import Operators
-from .constants import ENTITY_PROP_NAMES
-from .base_entity import SlvsGenericEntity
-from ..utilities.view import update_cb, refresh
-from ..utilities.solver import update_system_cb
 from ..utilities.bpy import setprop
+from ..utilities.solver import update_system_cb
+from ..utilities.view import refresh, update_cb
+from .base_entity import SlvsGenericEntity
+from .constants import ENTITY_PROP_NAMES
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +149,18 @@ class GenericConstraint:
             if wp:
                 return wp.p1.location, wp.normal
 
-        # TODO: return drawing plane for constraints in 3d
+        # Scene-level 3D dimensions are drawn in the local XY plane produced by
+        # their matrix_basis(). Reuse that plane for label dragging as well.
+        matrix_func = getattr(self, "matrix_basis", None)
+        if callable(matrix_func):
+            try:
+                mat = matrix_func()
+                normal = Vector(mat.col[2][:3])
+                if normal.length:
+                    return mat.translation.copy(), normal.normalized()
+            except Exception:
+                logger.debug("Could not resolve 3D constraint draw plane", exc_info=True)
+
         return None, None
 
     def copy(self, context, entities):
