@@ -1,0 +1,57 @@
+name: MONEY_AGENT #36 CI fix
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix-pr-606:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: money-agent-36-project-lines
+          fetch-depth: 0
+
+      - name: Install Ruff
+        run: pipx install ruff==0.16.2
+
+      - name: Format and lint PR files
+        run: |
+          ruff format \
+            operators/project_geometry.py \
+            testing/test_projection_anchor.py \
+            utilities/projection_anchor.py
+          ruff check --fix \
+            declarations.py \
+            handlers.py \
+            operators/__init__.py \
+            operators/project_geometry.py \
+            testing/test_projection_anchor.py \
+            ui/panels/tools.py \
+            utilities/projection_anchor.py
+          ruff check \
+            declarations.py \
+            handlers.py \
+            operators/__init__.py \
+            operators/project_geometry.py \
+            testing/test_projection_anchor.py \
+            ui/panels/tools.py \
+            utilities/projection_anchor.py
+
+      - name: Commit fixes to PR branch
+        run: |
+          if git diff --quiet; then
+            echo "No CI formatting fixes needed"
+            exit 0
+          fi
+          git config user.name "money-agent-bot"
+          git config user.email "64386813+franklincg@users.noreply.github.com"
+          git add declarations.py handlers.py operators/__init__.py operators/project_geometry.py testing/test_projection_anchor.py ui/panels/tools.py utilities/projection_anchor.py
+          git commit -m "Fix CI for live project geometry"
+          git push origin HEAD:money-agent-36-project-lines
