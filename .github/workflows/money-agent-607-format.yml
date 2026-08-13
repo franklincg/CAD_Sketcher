@@ -1,0 +1,45 @@
+name: MONEY_AGENT #607 format
+
+on:
+  push:
+    branches:
+      - money-agent-607-ci-validation
+
+permissions:
+  contents: write
+
+jobs:
+  format-607:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout validation branch
+        uses: actions/checkout@v4
+        with:
+          ref: money-agent-607-ci-validation
+          fetch-depth: 0
+
+      - name: Install Ruff
+        run: pipx install ruff==0.16.2
+
+      - name: Format and lint #607 files
+        run: |
+          ruff format \
+            model/native_3d.py \
+            testing/test_native_3d_sketch.py
+          ruff check --fix \
+            model/__init__.py \
+            model/native_3d.py \
+            testing/test_native_3d_sketch.py
+          ruff check \
+            model/__init__.py \
+            model/native_3d.py \
+            testing/test_native_3d_sketch.py
+
+      - name: Remove one-shot workflow and commit fixes
+        run: |
+          rm .github/workflows/money-agent-607-format.yml
+          git config user.name "money-agent-bot"
+          git config user.email "64386813+franklincg@users.noreply.github.com"
+          git add -A
+          git commit -m "Format native 3D sketch core"
+          git push origin HEAD:money-agent-607-ci-validation
