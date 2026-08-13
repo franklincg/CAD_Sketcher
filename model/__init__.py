@@ -27,7 +27,6 @@ modules = [
     "symmetry",
     "group_constraints",
     "group_sketcher",
-    "native_3d",
 ]
 
 
