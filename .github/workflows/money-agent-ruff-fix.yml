@@ -1,0 +1,49 @@
+name: MONEY_AGENT Ruff autofix
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  fix-pr-605:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: money-agent-55-distance-3d
+          fetch-depth: 0
+
+      - name: Install Ruff
+        run: pipx install ruff==0.16.2
+
+      - name: Autofix lint reported by upstream CI
+        run: |
+          ruff check --fix \
+            handlers.py \
+            model/base_constraint.py \
+            model/distance.py \
+            operators/solve.py \
+            testing/test_distance_3d.py
+          ruff check \
+            handlers.py \
+            model/base_constraint.py \
+            model/distance.py \
+            operators/solve.py \
+            testing/test_distance_3d.py
+
+      - name: Commit fixes to PR branch
+        run: |
+          if git diff --quiet; then
+            echo "No lint fixes needed"
+            exit 0
+          fi
+          git config user.name "money-agent-bot"
+          git config user.email "64386813+franklincg@users.noreply.github.com"
+          git add handlers.py model/base_constraint.py model/distance.py operators/solve.py testing/test_distance_3d.py
+          git commit -m "Fix Ruff lint for 3D distance support"
+          git push origin HEAD:money-agent-55-distance-3d
