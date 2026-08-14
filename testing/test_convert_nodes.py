@@ -11,6 +11,8 @@ from unittest import TestCase
 
 import bpy
 
+from .utils import Sketch2dTestCase
+
 
 @unittest.skipIf(bpy.app.version < (5, 2, 0), "Merge Points requires Blender 5.2+")
 class TestConvertNodeGroup(TestCase):
@@ -102,14 +104,6 @@ class TestConvertNodeGroup(TestCase):
             self.assertEqual(ng.get("cad_convert_version"), CONVERT_VERSION)
         finally:
             bpy.data.node_groups.remove(ng)
-
-
-@unittest.skipIf(bpy.app.version < (5, 2, 0), "Merge Points requires Blender 5.2+")
-class TestGeneratedElementIdentity:
-    """Mixin populated below after importing the test harness lazily."""
-
-
-from .utils import Sketch2dTestCase
 
 
 @unittest.skipIf(bpy.app.version < (5, 2, 0), "Merge Points requires Blender 5.2+")
